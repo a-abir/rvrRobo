@@ -16,18 +16,22 @@ pygame.display.set_caption("Virtual RVR")
 my_font = pygame.font.SysFont('consolas', 30)
 
 # 19 x 12 grid
-maps = ["W" * 21,
-        "W..........W........W",
-        "W....0.....W........W",
-        "W....0.....W........W",
-        "W....0..............W",
-        "w....1..WWW.........w",
-        "w....1..............w",
-        "w....1..............w",
-        "w.....W.............w",
-        "w.....W.............w",
-        "w.....W...........B.w",
-        "W" * 21] 
+maps = ["W" * 23,
+        "W" * 23,
+        "WW........1....WWWWWBWW",
+        "WW........1....WwWwW.WW",
+        "WW..WW....1W...WWWWW.WW",
+        "WW..WwWW..111111111..WW",
+        "WW..WWwW.....WW...1..WW",
+        "WW...WWW....WWWWW.1..WW",
+        "WW....1.....WWWwW.1..WW",
+        "WWW...11....WWWWWW1WWWW",
+        "WWw...111......WWW1..WW",
+        "WWw...111......1.11..WW",
+        "WWW...........11.....WW",
+        "WW.......BW..........WW",
+        "W" * 23,
+        "W" * 23] 
 
 scales = 50
 screenW, screenH = len(maps[0]), len(maps)
@@ -38,9 +42,11 @@ floor = pygame.image.load("images/floor.png").convert()
 floor = pygame.transform.scale(floor, (scales, scales))
 beacon = pygame.image.load("images/beacon.png").convert()
 beacon = pygame.transform.scale(beacon, (scales, scales))
+water = pygame.image.load("images/water.png").convert()
+water = pygame.transform.scale(water, (scales, scales))
 
 class robo():
-    def __init__(self, x=1, y=1):
+    def __init__(self, x=9, y=12):
         self.orientation = 0
         self.rect = pygame.rect.Rect((scales*x, scales*y, scales, scales))
         self.loc = (x, y)
@@ -234,8 +240,10 @@ class robo():
     def drawGrid(self):
         for x in range(0, len(maps[0])):
             for y in range(0, len(maps)):
-                if maps[y][x].lower() == "w":
+                if maps[y][x] == "W":
                     screen.blit(wall, (x*scales, y*scales))
+                elif maps[y][x] == "w":
+                    screen.blit(water, (x*scales, y*scales))
                 elif maps[y][x].lower() == "0": 
                     pygame.draw.rect(screen, (0, 0, 0), (x*scales, y*scales, scales, scales))
                 elif maps[y][x].lower() == "1":
