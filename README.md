@@ -1,3 +1,7 @@
+## Install required libaraies
+
+    pip install pygame --pre
+
 ## Import and setup instructions:
 
     from robot import robo
@@ -6,7 +10,7 @@
 Example Program:
 
     from robot import robo
-	robo = robo()		# initialize clss
+	robo = robo()		# initialize class
 	robo.setSpeed(.5)	# set sim speed 50%
 	
 	robo.paintWhite()	# put white brush down
