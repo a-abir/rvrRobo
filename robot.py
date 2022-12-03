@@ -83,6 +83,7 @@ class robo:
         Usage: `robo.setSpeed(0.5)`
         """
         self._speed = speed
+        self.__update__()
 
     def __getFrontElem__(self):
         """Internal function | `Do not call from outside`"""
@@ -139,6 +140,7 @@ class robo:
         Usage: `robo.message("Hello World")`
         """
         self._messageTxt_ = text
+        self.__update__()
 
     def __getFrontRoboMov__(self):
         """Internal function | `Do not call from outside`"""
@@ -254,6 +256,7 @@ class robo:
             _maps_[floc[1]] = (
                 _maps_[floc[1]][: floc[0]] + "." + _maps_[floc[1]][floc[0] + 1 :]
             )
+            self.__update__()
 
     def putDown(self):
         """Put down the object in front of the robot
@@ -270,6 +273,7 @@ class robo:
             _maps_[floc[1]] = (
                 _maps_[floc[1]][: floc[0]] + "b" + _maps_[floc[1]][floc[0] + 1 :]
             )
+            self.__update__()
 
     def eatUp(self):
         """Eat up the object in front of the robot
@@ -281,6 +285,7 @@ class robo:
             _maps_[floc[1]] = (
                 _maps_[floc[1]][: floc[0]] + "." + _maps_[floc[1]][floc[0] + 1 :]
             )
+            self.__update__()
 
     def paintWhite(self):
         """Paint the object in front of the robot white
