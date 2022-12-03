@@ -16,37 +16,44 @@ pygame.display.set_caption("Virtual RVR")
 my_font = pygame.font.SysFont('consolas', 30)
 
 # 19 x 12 grid
-maps = ["W" * 23,
-        "W" * 23,
-        "WW........1....WWWWWBWW",
-        "WW........1....WwWwW.WW",
-        "WW..WW....1W...WWWWW.WW",
-        "WW..WwWW..111111111..WW",
-        "WW..WWwW.....WW...1..WW",
-        "WW...WWW....WWWWW.1..WW",
-        "WW....1.....WWWwW.1..WW",
-        "WWW...11....WWWWWW1WWWW",
-        "WWw...111......WWW1..WW",
-        "WWw...111......1.11..WW",
-        "WWW...........11.....WW",
-        "WW.......BW..........WW",
-        "W" * 23,
-        "W" * 23] 
+maps = ['WnWmmWWWWWWWWWWmWWWWWnW',
+        'WWWWWWWWWWWWWWWWWWWWWWW',
+        'WW........1....WmWWmBWW',
+        'WW........1....WwWwW.WW',
+        'WW..WW....1m...WWWWW.Wn',
+        'Wm...WWW....WWWWW.1..WW',
+        'Wn....1.....WWWwW.1..WW',
+        'WmW...11....WWmWWW1WmWW',
+        'WWw...111......WWW1..WW',
+        'mWw...111......1.11..WW',
+        'WWW...........11.....WW',
+        'WWn.................mWW',
+        'WW.......Bn..........WW',
+        'nWWWWWWWWWWWWWWWnWWWWWW',
+        'WWWnWWWWmWWWWWWWWnWnnmW'] 
 
 scales = 50
 screenW, screenH = len(maps[0]), len(maps)
 screen = pygame.display.set_mode((screenW * scales, screenH * scales))
 wall = pygame.image.load("images/wall.png").convert()
 wall = pygame.transform.scale(wall, (scales, scales))
+wall1 = pygame.image.load("images/wall1.png").convert()
+wall1 = pygame.transform.scale(wall1, (scales, scales))
+wall2 = pygame.image.load("images/wall2.png").convert()
+wall2 = pygame.transform.scale(wall2, (scales, scales))
 floor = pygame.image.load("images/floor.png").convert()
 floor = pygame.transform.scale(floor, (scales, scales))
-beacon = pygame.image.load("images/beacon.png").convert()
+beacon = pygame.image.load("images/beacon.png").convert_alpha()
 beacon = pygame.transform.scale(beacon, (scales, scales))
 water = pygame.image.load("images/water.png").convert()
 water = pygame.transform.scale(water, (scales, scales))
+white = pygame.image.load("images/white.png").convert()
+white = pygame.transform.scale(white, (scales, scales))
+black = pygame.image.load("images/black.png").convert()
+black = pygame.transform.scale(black, (scales, scales))
 
 class robo():
-    def __init__(self, x=9, y=12):
+    def __init__(self, x=9, y=11):
         self.orientation = 0
         self.rect = pygame.rect.Rect((scales*x, scales*y, scales, scales))
         self.loc = (x, y)
@@ -112,11 +119,10 @@ class robo():
             if update:
                 self.update()
             time.sleep(0.15 / self.__speed)
-            fmov = self._getFrontRoboMov()
-            flem = self._getFrontElem()
-            if flem.lower() == "w" or flem.lower() == "b":
+            if self.frontIsObstacle():
                 return
             else:
+                fmov = self._getFrontRoboMov()
                 self.rect.move_ip(*fmov)
                 self.loc = (self.loc[0] + fmov[0] // scales, self.loc[1] + fmov[1] // scales)
             if update:
@@ -158,12 +164,12 @@ class robo():
         if self.cargo == 0:
             return
         flem = self._getFrontElem()
-        if flem.lower() == "b" or flem.lower() == "w":
+        if self.frontIsObstacle():
             return
         else:
             self.cargo -= 1
             floc = self._getFrontElemLoc()
-            maps[floc[1]] = maps[floc[1]][:floc[0]] + "B" + maps[floc[1]][floc[0] + 1:]
+            maps[floc[1]] = maps[floc[1]][:floc[0]] + "b" + maps[floc[1]][floc[0] + 1:]
 
     def eatUp(self):
         if self._getFrontElem().lower() == "b":
@@ -189,13 +195,13 @@ class robo():
         return self._rightElement().lower() == "b"
 
     def leftIsWall(self):
-        return self._leftElement().lower() == "w"
+        return self._leftElement().lower() in ['w', 'n', 'm']
 
     def frontIsWall(self):
-        return self._getFrontElem().lower() == "w"
+        return self._getFrontElem().lower() in ['w', 'n', 'm']
 
     def rightIsWall(self):
-        return self._rightElement().lower() == "w"
+        return self._rightElement().lower() in ['w', 'n', 'm']
 
     def leftIsClear(self):
         return not self.leftIsWall() and not self.leftIsBeacon()
@@ -244,10 +250,14 @@ class robo():
                     screen.blit(wall, (x*scales, y*scales))
                 elif maps[y][x] == "w":
                     screen.blit(water, (x*scales, y*scales))
+                elif maps[y][x] == "m":
+                    screen.blit(wall1, (x*scales, y*scales))
+                elif maps[y][x] == "n":
+                    screen.blit(wall2, (x*scales, y*scales))
                 elif maps[y][x].lower() == "0": 
-                    pygame.draw.rect(screen, (0, 0, 0), (x*scales, y*scales, scales, scales))
+                    screen.blit(black, (x*scales, y*scales))
                 elif maps[y][x].lower() == "1":
-                    pygame.draw.rect(screen, (255, 255, 255), (x*scales, y*scales, scales, scales))
+                    screen.blit(white, (x*scales, y*scales))
                 elif maps[y][x].lower() == "b":
                     screen.blit(beacon, (x*scales, y*scales))
                 else:
