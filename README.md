@@ -2,26 +2,30 @@
 
 ## Install required libaraies
 
-    pip install pygame --pre
+`pip install pygame --pre`
 
 ## Import and setup instructions:
 
-    from robot import robo
-    robo = robo()
+```python
+from robot import robo
+robo = robo()
+```
 
 Example Program:
 
-	from robot import robo
-	robo = robo()       # initialize the robot
-	robo.setSpeed(.5)   # Set sim speed 50%
+```python
+from robot import robo
+robo = robo()       # initialize the robot
+robo.setSpeed(.5)   # Set sim speed 50%
 
-	robo.message("Hello World!")
-	robo.paintWhite()   # put white brush down
-	robo.left()         # turn left
-	robo.forward(10)    # move forward 10 steps
-	robo.paintBlack()   # put black brush down
-	robo.right()        # turn right
-	robo.forward(10)    # move forward 10 steps
+robo.message("Hello World!")
+robo.paintWhite()   # put white brush down
+robo.left()         # turn left
+robo.forward(10)    # move forward 10 steps
+robo.paintBlack()   # put black brush down
+robo.right()        # turn right
+robo.forward(10)    # move forward 10 steps
+```
    
 
 ## Available Commands:
@@ -101,3 +105,43 @@ Example Program:
 	
  - `robo.message(f"{robo.cargo} beacons")`
 	: *Insert the number of beacons carried by Robo*
+
+<br>
+<br>
+<hr>
+
+## Make a custom map
+
+**Keymap:**
+
+    W, w, n, m = walls elements
+    .     = empty space (floor)
+    R/r   = robot
+    1     = white paint
+    0     = black paint
+    B/b   = beacon
+
+**Custom map Example:**
+```python
+from robot import robo
+
+exampleMap = [
+    "WnWmmWWWWWWWWWWmWWWWWnW",
+    "WmWmm.......B.....mmWmW",
+    "W..........B..........W",
+    "W.........B...........W",
+    "W........B............W",
+    "W.......B.............W",
+    "W......B..............W",
+    "W.....B...............W",
+    "W....B................W",
+    "W...B.................W",
+    "W..B...........R......W",
+    "W.B...................W",
+    "W.....................W",
+    "WWWnWWWWmWWWWWWWWnWnnmW"]
+
+robo = robo(exampleMap)
+robo.forward(10)
+```
+![rvr gamescreen](https://raw.githubusercontent.com/a-abir/rvrRobo/main/images/customMap.png)
