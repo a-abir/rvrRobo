@@ -19,4 +19,6 @@ robo.forward(3)    # move forward 10 steps
 robo.message("Moved forward 3 steps")
 robo.putDown()      # put down cargo
 robo.message("Put down cargo")
+robo.stopPainting() # stop painting
+robo.clearPaint()   # clear paint
 robo.right(5)        # turn right

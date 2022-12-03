@@ -70,6 +70,9 @@ Example Program:
  - `robo.stopPainting()`
 	: *Stop painting, hide the brush*
 
+ - `robo.clearPaint()`
+	: *Clear paint at the position of the robot*
+
 **Check Environment:**
 
  - `robo.leftIsClear()`

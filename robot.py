@@ -20,11 +20,11 @@ _maps_ = [
     "WWWWWWWWWWWWWWWWWWWWWWW",
     "WW........1....WmWWmBWW",
     "WW........1....WwWwW.WW",
-    "WW..WW....1m...WWWWW.Wn",
-    "Wm...WWW....WWWWW.1..WW",
-    "Wn....1.....WwwwW.1..WW",
-    "WmW...11....WWmWWW1WmWW",
-    "WWw...111......WWW1..WW",
+    "WW..WWmW..1.....WWWW.Wn",
+    "Wm...nWW....WW....1..WW",
+    "Wn....1.....WwnWW.1..WW",
+    "WmW...11....WWmWwW1WmWW",
+    "WWw...111......WW.1..WW",
     "mWw...111......1.11..WW",
     "WWW...........11.....WW",
     "WWn.................mWW",
@@ -37,23 +37,28 @@ _scales_ = 50
 _screenW_, _screenH_ = len(_maps_[0]), len(_maps_)
 _screen_ = pygame.display.set_mode((_screenW_ * _scales_, _screenH_ * _scales_))
 
-# load in images
-_wall_ = pygame.image.load("images/wall.png").convert()
-_wall_ = pygame.transform.scale(_wall_, (_scales_, _scales_))
-_wall1_ = pygame.image.load("images/wall1.png").convert()
-_wall1_ = pygame.transform.scale(_wall1_, (_scales_, _scales_))
-_wall2_ = pygame.image.load("images/wall2.png").convert()
-_wall2_ = pygame.transform.scale(_wall2_, (_scales_, _scales_))
-_floor_ = pygame.image.load("images/floor.png").convert()
-_floor_ = pygame.transform.scale(_floor_, (_scales_, _scales_))
-_beacon_ = pygame.image.load("images/beacon.png").convert_alpha()
-_beacon_ = pygame.transform.scale(_beacon_, (_scales_, _scales_))
-_water_ = pygame.image.load("images/water.png").convert()
-_water_ = pygame.transform.scale(_water_, (_scales_, _scales_))
-_white_ = pygame.image.load("images/white.png").convert()
-_white_ = pygame.transform.scale(_white_, (_scales_, _scales_))
-_black_ = pygame.image.load("images/black.png").convert()
-_black_ = pygame.transform.scale(_black_, (_scales_, _scales_))
+
+def getSprites(filename, scl, dim=[3, 3]):
+    shts = []
+    sprt = pygame.image.load(filename).convert_alpha()
+    sprt = pygame.transform.scale(sprt, (scl * dim[0], scl * dim[1]))
+    for ly in range(0, dim[1] * scl, scl):
+        for lx in range(0, dim[0] * scl, scl):
+            rct = (lx, ly, scl, scl)
+            rct = pygame.Rect(rct)
+            img = pygame.Surface(rct.size).convert()
+            img.blit(sprt, (0, 0), rct)
+            img.set_colorkey((255, 255, 255), pygame.RLEACCEL)
+            shts.append(img)
+    return shts
+
+
+# load in images from spritesheet 3x3
+_sprites_ = getSprites("images/sprite.png", _scales_, [3, 5])
+_beacon_, _black_, _floor_ = _sprites_[0:3]
+_walls_ = _sprites_[4:7]
+_water_, _white_ = _sprites_[7:9]
+_robots_ = _sprites_[9:15]
 
 
 class robo:
@@ -71,8 +76,8 @@ class robo:
         self._rect_ = pygame.rect.Rect((_scales_ * x, _scales_ * y, _scales_, _scales_))
         self._speed = 1
         self._messageTxt_ = ""
-        self._image_ = pygame.image.load("images/spaceship.png").convert_alpha()
-        self._image_ = pygame.transform.scale(self._image_, (_scales_, _scales_))
+        self._robot_iter_ = [0, 0]
+        self._robot_ = _robots_[self._robot_iter_[0]]
         self.__update__()
 
     def setSpeed(self, speed: float):
@@ -164,7 +169,7 @@ class robo:
         for _ in range(steps):
             if update:
                 self.__update__()
-            pygame.time.wait(int(100 / self._speed))
+            pygame.time.wait(int(25 / self._speed))
             if self.frontIsObstacle():
                 for i in range(6):
                     pygame.time.wait(int(50 / self._speed))
@@ -178,6 +183,7 @@ class robo:
                 fmov = self.__getFrontRoboMov__()
                 for _ in range(_scales_):
                     self._rect_.move_ip(fmov[0] // _scales_, fmov[1] // _scales_)
+                    pygame.time.wait(2)
                     self.__update__()
                 self.loc = [
                     self.loc[0] + fmov[0] // _scales_,
@@ -305,6 +311,21 @@ class robo:
         """
         self.paint = None
 
+    def clearPaint(self):
+        """Clear the paint on the object in front of the robot
+        Usage: `robo.clearPaint()`
+        """
+        if (
+            _maps_[self.loc[1]][self.loc[0]] == "1"
+            or _maps_[self.loc[1]][self.loc[0]] == "0"
+        ):
+            _maps_[self.loc[1]] = (
+                _maps_[self.loc[1]][: self.loc[0]]
+                + "."
+                + _maps_[self.loc[1]][self.loc[0] + 1 :]
+            )
+            self.__update__()
+
     def leftIsBeacon(self):
         """Check if the object on the left is a beacon
         Usage: `robo.leftIsBeacon()`
@@ -427,7 +448,15 @@ class robo:
 
     def __draw__(self, surface) -> None:
         """Internal function | `Do not call from outside`"""
-        img = pygame.transform.rotate(self._image_, self._orientation_)
+        self._robot_iter_[1] += 1
+        if self._robot_iter_[1] >= 4:
+            self._robot_iter_[1] = 0
+            self._robot_iter_[0] += 1
+            if self._robot_iter_[0] >= len(_robots_):
+                self._robot_iter_[0] = 0
+            self._robot_ = _robots_[self._robot_iter_[0]]
+
+        img = pygame.transform.rotate(self._robot_, self._orientation_)
         surface.blit(img, self._rect_)
 
     def __drawGrid__(self):
@@ -435,13 +464,13 @@ class robo:
         for x in range(0, len(_maps_[0])):
             for y in range(0, len(_maps_)):
                 if _maps_[y][x] == "W":
-                    _screen_.blit(_wall_, (x * _scales_, y * _scales_))
+                    _screen_.blit(_walls_[0], (x * _scales_, y * _scales_))
                 elif _maps_[y][x] == "w":
                     _screen_.blit(_water_, (x * _scales_, y * _scales_))
                 elif _maps_[y][x] == "m":
-                    _screen_.blit(_wall1_, (x * _scales_, y * _scales_))
+                    _screen_.blit(_walls_[1], (x * _scales_, y * _scales_))
                 elif _maps_[y][x] == "n":
-                    _screen_.blit(_wall2_, (x * _scales_, y * _scales_))
+                    _screen_.blit(_walls_[2], (x * _scales_, y * _scales_))
                 elif _maps_[y][x].lower() == "0":
                     _screen_.blit(_black_, (x * _scales_, y * _scales_))
                 elif _maps_[y][x].lower() == "1":
