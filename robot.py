@@ -1,6 +1,5 @@
 import pygame
-import sys   
-import time 
+import sys
 
 """
 Author: Abrian Abir
@@ -13,307 +12,464 @@ pygame.init()
 pygame.font.init()
 
 pygame.display.set_caption("Virtual RVR")
-my_font = pygame.font.SysFont('consolas', 30)
+_font_ = pygame.font.SysFont("consolas", 30)
 
-# 19 x 12 grid
-maps = ['WnWmmWWWWWWWWWWmWWWWWnW',
-        'WWWWWWWWWWWWWWWWWWWWWWW',
-        'WW........1....WmWWmBWW',
-        'WW........1....WwWwW.WW',
-        'WW..WW....1m...WWWWW.Wn',
-        'Wm...WWW....WWWWW.1..WW',
-        'Wn....1.....WwwwW.1..WW',
-        'WmW...11....WWmWWW1WmWW',
-        'WWw...111......WWW1..WW',
-        'mWw...111......1.11..WW',
-        'WWW...........11.....WW',
-        'WWn.................mWW',
-        'WW.......Bn..........WW',
-        'nWWWWWWWWWWWWWWWnWWWWWW',
-        'WWWnWWWWmWWWWWWWWnWnnmW'] 
+# 19 x 12 grid map
+_maps_ = [
+    "WnWmmWWWWWWWWWWmWWWWWnW",
+    "WWWWWWWWWWWWWWWWWWWWWWW",
+    "WW........1....WmWWmBWW",
+    "WW........1....WwWwW.WW",
+    "WW..WW....1m...WWWWW.Wn",
+    "Wm...WWW....WWWWW.1..WW",
+    "Wn....1.....WwwwW.1..WW",
+    "WmW...11....WWmWWW1WmWW",
+    "WWw...111......WWW1..WW",
+    "mWw...111......1.11..WW",
+    "WWW...........11.....WW",
+    "WWn.................mWW",
+    "WW.......Bn..........WW",
+    "nWWWWWWWWWWWWWWWnWWWWWW",
+    "WWWnWWWWmWWWWWWWWnWnnmW",
+]
 
-scales = 50
-screenW, screenH = len(maps[0]), len(maps)
-screen = pygame.display.set_mode((screenW * scales, screenH * scales))
-wall = pygame.image.load("images/wall.png").convert()
-wall = pygame.transform.scale(wall, (scales, scales))
-wall1 = pygame.image.load("images/wall1.png").convert()
-wall1 = pygame.transform.scale(wall1, (scales, scales))
-wall2 = pygame.image.load("images/wall2.png").convert()
-wall2 = pygame.transform.scale(wall2, (scales, scales))
-floor = pygame.image.load("images/floor.png").convert()
-floor = pygame.transform.scale(floor, (scales, scales))
-beacon = pygame.image.load("images/beacon.png").convert_alpha()
-beacon = pygame.transform.scale(beacon, (scales, scales))
-water = pygame.image.load("images/water.png").convert()
-water = pygame.transform.scale(water, (scales, scales))
-white = pygame.image.load("images/white.png").convert()
-white = pygame.transform.scale(white, (scales, scales))
-black = pygame.image.load("images/black.png").convert()
-black = pygame.transform.scale(black, (scales, scales))
+_scales_ = 50
+_screenW_, _screenH_ = len(_maps_[0]), len(_maps_)
+_screen_ = pygame.display.set_mode((_screenW_ * _scales_, _screenH_ * _scales_))
 
-class robo():
-    def __init__(self, x=9, y=11):
-        self.orientation = 0
-        self.rect = pygame.rect.Rect((scales*x, scales*y, scales, scales))
+# load in images
+_wall_ = pygame.image.load("images/wall.png").convert()
+_wall_ = pygame.transform.scale(_wall_, (_scales_, _scales_))
+_wall1_ = pygame.image.load("images/wall1.png").convert()
+_wall1_ = pygame.transform.scale(_wall1_, (_scales_, _scales_))
+_wall2_ = pygame.image.load("images/wall2.png").convert()
+_wall2_ = pygame.transform.scale(_wall2_, (_scales_, _scales_))
+_floor_ = pygame.image.load("images/floor.png").convert()
+_floor_ = pygame.transform.scale(_floor_, (_scales_, _scales_))
+_beacon_ = pygame.image.load("images/beacon.png").convert_alpha()
+_beacon_ = pygame.transform.scale(_beacon_, (_scales_, _scales_))
+_water_ = pygame.image.load("images/water.png").convert()
+_water_ = pygame.transform.scale(_water_, (_scales_, _scales_))
+_white_ = pygame.image.load("images/white.png").convert()
+_white_ = pygame.transform.scale(_white_, (_scales_, _scales_))
+_black_ = pygame.image.load("images/black.png").convert()
+_black_ = pygame.transform.scale(_black_, (_scales_, _scales_))
+
+
+class robo:
+    def __init__(self, x: int = 9, y: int = 11):
+        """Robot class constructor
+
+        Arguments:
+            x {int} -- x coordinate of robot
+            y {int} -- y coordinate of robot
+        """
         self.loc = (x, y)
         self.cargo = 0
         self.paint = None
-        self.__speed = 1
-        self.messageTxt = ''
-        self.clock = pygame.time.Clock()
-        self.image = pygame.image.load("images/spaceship.png").convert_alpha()
-        self.image = pygame.transform.scale(self.image, (scales, scales))
-        self.update()
+        self._orientation_: int = 0
+        self._rect_ = pygame.rect.Rect((_scales_ * x, _scales_ * y, _scales_, _scales_))
+        self._speed = 1
+        self._messageTxt_ = ""
+        self._image_ = pygame.image.load("images/spaceship.png").convert_alpha()
+        self._image_ = pygame.transform.scale(self._image_, (_scales_, _scales_))
+        self.__update__()
 
-    def setSpeed(self, speed):
-        self.__speed = speed
+    def setSpeed(self, speed: float):
+        """Set the speed of the robot
 
-    def _getFrontElem(self):
-        if self.orientation == 0:
-            return maps[self.loc[1] - 1][self.loc[0]]
-        elif self.orientation == 90:
-            return maps[self.loc[1]][self.loc[0] - 1]
-        elif self.orientation == 180:
-            return maps[self.loc[1] + 1][self.loc[0]]
-        elif self.orientation == 270:
-            return maps[self.loc[1]][self.loc[0] + 1]
-        
-    def _getBackElem(self):
-        if self.orientation == 0:
-            return maps[self.loc[1] + 1][self.loc[0]]
-        elif self.orientation == 90:
-            return maps[self.loc[1]][self.loc[0] + 1]
-        elif self.orientation == 180:
-            return maps[self.loc[1] - 1][self.loc[0]]
-        elif self.orientation == 270:
-            return maps[self.loc[1]][self.loc[0] - 1]
+        Arguments:
+            speed {float} -- speed of the robot
+        Usage: `robo.setSpeed(0.5)`
+        """
+        self._speed = speed
 
-    def _getFrontElemLoc(self):
-        if self.orientation == 0:
+    def __getFrontElem__(self):
+        """Internal function | `Do not call from outside`"""
+        if self._orientation_ == 0:
+            return _maps_[self.loc[1] - 1][self.loc[0]]
+        elif self._orientation_ == 90:
+            return _maps_[self.loc[1]][self.loc[0] - 1]
+        elif self._orientation_ == 180:
+            return _maps_[self.loc[1] + 1][self.loc[0]]
+        elif self._orientation_ == 270:
+            return _maps_[self.loc[1]][self.loc[0] + 1]
+
+    def __getBackElem__(self):
+        """Internal function | `Do not call from outside`"""
+        if self._orientation_ == 0:
+            return _maps_[self.loc[1] + 1][self.loc[0]]
+        elif self._orientation_ == 90:
+            return _maps_[self.loc[1]][self.loc[0] + 1]
+        elif self._orientation_ == 180:
+            return _maps_[self.loc[1] - 1][self.loc[0]]
+        elif self._orientation_ == 270:
+            return _maps_[self.loc[1]][self.loc[0] - 1]
+
+    def __getFrontElemLoc__(self):
+        """Internal function | `Do not call from outside`"""
+        if self._orientation_ == 0:
             return (self.loc[0], self.loc[1] - 1)
-        elif self.orientation == 90:
+        elif self._orientation_ == 90:
             return (self.loc[0] - 1, self.loc[1])
-        elif self.orientation == 180:
+        elif self._orientation_ == 180:
             return (self.loc[0], self.loc[1] + 1)
-        elif self.orientation == 270:
+        elif self._orientation_ == 270:
             return (self.loc[0] + 1, self.loc[1])
-    
-    def _leftElement(self):
+
+    def __leftElement__(self) -> str | None:
+        """Internal function | `Do not call from outside`"""
         self.left()
-        flem = self._getFrontElem()
+        flem = self.__getFrontElem__()
         self.right()
         return flem
-    
-    def _rightElement(self):
+
+    def __rightElement__(self) -> str | None:
+        """Internal function | `Do not call from outside`"""
         self.right()
-        flem = self._getFrontElem()
+        flem = self.__getFrontElem__()
         self.left()
         return flem
 
-    def message(self, text):
-        self.messageTxt = text
+    def message(self, text) -> None:
+        """Write a message on the screen
 
-    def _getFrontRoboMov(self):
-        if self.orientation == 0:
-            return (0, -scales)
-        elif self.orientation == 90:
-            return (-scales, 0)
-        elif self.orientation == 180:
-            return (0, scales)
-        elif self.orientation == 270:
-            return (scales, 0)
-    
-    def forward(self, steps=1, update=True):
+        Arguments:
+            text {str} -- message to be displayed
+        Usage: `robo.message("Hello World")`
+        """
+        self._messageTxt_ = text
+
+    def __getFrontRoboMov__(self):
+        """Internal function | `Do not call from outside`"""
+        if self._orientation_ == 0:
+            return (0, -_scales_)
+        elif self._orientation_ == 90:
+            return (-_scales_, 0)
+        elif self._orientation_ == 180:
+            return (0, _scales_)
+        elif self._orientation_ == 270:
+            return (_scales_, 0)
+
+    def forward(self, steps=1, update=True) -> None:
+        """Move the robot forward
+
+        Keyword Arguments:
+            steps {int} -- number of steps to move (default: {1})
+            update {bool} -- update the screen (default: {True})
+        Usage: `robo.forward()`
+        """
         for _ in range(steps):
             if update:
-                self.update()
-            time.sleep(0.15 / self.__speed)
+                self.__update__()
+            pygame.time.wait(int(100 / self._speed))
             if self.frontIsObstacle():
                 for i in range(6):
-                    time.sleep(0.05 / self.__speed)
+                    pygame.time.wait(int(50 / self._speed))
                     if i % 2 == 0:
-                        self.orientation += 15
+                        self._orientation_ += 15
                     else:
-                        self.orientation -= 15
-                    self.update()
+                        self._orientation_ -= 15
+                    self.__update__()
                 return
             else:
-                fmov = self._getFrontRoboMov()
-                self.rect.move_ip(*fmov)
-                self.loc = (self.loc[0] + fmov[0] // scales, self.loc[1] + fmov[1] // scales)
+                fmov = self.__getFrontRoboMov__()
+                for _ in range(_scales_):
+                    self._rect_.move_ip(fmov[0] // _scales_, fmov[1] // _scales_)
+                    self.__update__()
+                self.loc = [
+                    self.loc[0] + fmov[0] // _scales_,
+                    self.loc[1] + fmov[1] // _scales_,
+                ]
             if update:
-                self.update()
-                
-    def backward(self, steps=1):
+                self.__update__()
+
+    def backward(self, steps=1) -> None:
+        """Move the robot backward
+
+        Keyword Arguments:
+            steps {int} -- number of steps to move (default: {1})
+        Usage: `robo.backward()`
+        """
         for _ in range(steps):
-            self.update()
-            time.sleep(0.15 / self.__speed)
-            if self._backIsObstacle():
+            self.__update__()
+            pygame.time.wait(int(100 / self._speed))
+            if self.__backIsObstacle__():
                 for i in range(6):
-                    time.sleep(0.05 / self.__speed)
+                    pygame.time.wait(int(50 / self._speed))
                     if i % 2 == 0:
-                        self.orientation += 15
+                        self._orientation_ += 15
                     else:
-                        self.orientation -= 15
-                    self.update()
+                        self._orientation_ -= 15
+                    self.__update__()
                 return
             else:
-                fmov = self._getFrontRoboMov()
-                self.rect.move_ip(-fmov[0], -fmov[1])
-                self.loc = (self.loc[0] - fmov[0] // scales, self.loc[1] - fmov[1] // scales)
-            self.update()
+                fmov = self.__getFrontRoboMov__()
+                for _ in range(_scales_):
+                    self._rect_.move_ip(-fmov[0] // _scales_, -fmov[1] // _scales_)
+                    self.__update__()
+                self.loc = [
+                    self.loc[0] - fmov[0] // _scales_,
+                    self.loc[1] - fmov[1] // _scales_,
+                ]
+            self.__update__()
 
     def right(self, steps=1):
+        """Turn the robot right
+
+        Keyword Arguments:
+            steps {int} -- number of steps to move (default: {1})
+        Usage: `robo.right()`
+        """
         for _ in range(steps):
-            self.orientation -= 90
-            self.orientation %= 360
-            time.sleep(0.15 / self.__speed)
-            self.update()
+            for _ in range(45):
+                self._orientation_ -= 2
+                self.__update__()
+            self._orientation_ %= 360
+            self.__update__()
 
     def left(self, steps=1):
+        """Turn the robot left
+
+        Keyword Arguments:
+            steps {int} -- number of steps to move (default: {1})
+        Usage: `robo.left()`
+        """
         for _ in range(steps):
-            self.orientation += 90
-            self.orientation %= 360
-            time.sleep(0.15 / self.__speed)
-            self.update()
+            for _ in range(45):
+                self._orientation_ += 2
+                self.__update__()
+            self._orientation_ %= 360
+            self.__update__()
 
     def pickUp(self):
-        flem = self._getFrontElem()
+        """Pick up the object in front of the robot
+        Usage: `robo.pickUp()`
+        """
+        flem = self.__getFrontElem__()
         if flem.lower() == "b":
+            pygame.time.wait(int(150 / self._speed))
             self.cargo += 1
-            floc = self._getFrontElemLoc()
-            maps[floc[1]] = maps[floc[1]][:floc[0]] + "." + maps[floc[1]][floc[0] + 1:]
+            floc = self.__getFrontElemLoc__()
+            _maps_[floc[1]] = (
+                _maps_[floc[1]][: floc[0]] + "." + _maps_[floc[1]][floc[0] + 1 :]
+            )
 
     def putDown(self):
+        """Put down the object in front of the robot
+        Usage: `robo.putDown()`
+        """
         if self.cargo == 0:
             return
         if self.frontIsObstacle():
             return
         else:
+            pygame.time.wait(int(150 // self._speed))
             self.cargo -= 1
-            floc = self._getFrontElemLoc()
-            maps[floc[1]] = maps[floc[1]][:floc[0]] + "b" + maps[floc[1]][floc[0] + 1:]
+            floc = self.__getFrontElemLoc__()
+            _maps_[floc[1]] = (
+                _maps_[floc[1]][: floc[0]] + "b" + _maps_[floc[1]][floc[0] + 1 :]
+            )
 
     def eatUp(self):
-        if self._getFrontElem().lower() == "b":
-            floc = self._getFrontElemLoc()
-            maps[floc[1]] = maps[floc[1]][:floc[0]] + "." + maps[floc[1]][floc[0] + 1:]
+        """Eat up the object in front of the robot
+        Usage: `robo.eatUp()`
+        """
+        if self.__getFrontElem__().lower() == "b":
+            pygame.time.wait(int(150 // self._speed))
+            floc = self.__getFrontElemLoc__()
+            _maps_[floc[1]] = (
+                _maps_[floc[1]][: floc[0]] + "." + _maps_[floc[1]][floc[0] + 1 :]
+            )
 
     def paintWhite(self):
+        """Paint the object in front of the robot white
+        Usage: `robo.paintWhite()`
+        """
         self.paint = "1"
-    
+
     def paintBlack(self):
+        """Paint the object in front of the robot black
+        Usage: `robo.paintBlack()`
+        """
         self.paint = "0"
 
     def stopPainting(self):
+        """Stop painting the object in front of the robot
+        Usage: `robo.stopPainting()`
+        """
         self.paint = None
-    
-    def leftIsBeacon(self):
-        return self._leftElement().lower() == "b"
 
-    def _backIsBeacon(self):
-        return self._getBackElem().lower() == "b"
+    def leftIsBeacon(self):
+        """Check if the object on the left is a beacon
+        Usage: `robo.leftIsBeacon()`
+        """
+        return self.__leftElement__().lower() == "b"
+
+    def __backIsBeacon__(self):
+        """Internal function | `Do not call from outside`"""
+        return self.__getBackElem__().lower() == "b"
 
     def frontIsBeacon(self):
-        return self._getFrontElem().lower() == "b"
+        """Check if the object in front is a beacon
+        Usage: `robo.frontIsBeacon()`
+        """
+        return self.__getFrontElem__().lower() == "b"
 
     def rightIsBeacon(self):
-        return self._rightElement().lower() == "b"
+        """Check if the object on the right is a beacon
+        Usage: `robo.rightIsBeacon()`
+        """
+        return self.__rightElement__().lower() == "b"
 
     def leftIsWall(self):
-        return self._leftElement().lower() in ['w', 'n', 'm']
+        """Check if the object on the left is a wall
+        Usage: `robo.leftIsWall()`
+        """
+        return self.__leftElement__().lower() in ["w", "n", "m"]
 
-    def _backIsWall(self):
-        return self._getBackElem().lower() in ['w', 'n', 'm']
+    def __backIsWall__(self):
+        """Internal function | `Do not call from outside`"""
+        return self.__getBackElem__().lower() in ["w", "n", "m"]
 
     def frontIsWall(self):
-        return self._getFrontElem().lower() in ['w', 'n', 'm']
+        """Check if the object in front is a wall
+        Usage: `robo.frontIsWall()`
+        """
+        return self.__getFrontElem__().lower() in ["w", "n", "m"]
 
     def rightIsWall(self):
-        return self._rightElement().lower() in ['w', 'n', 'm']
+        """Check if the object on the right is a wall
+        Usage: `robo.rightIsWall()`
+        """
+        return self.__rightElement__().lower() in ["w", "n", "m"]
 
     def leftIsClear(self):
+        """Check if the object on the left is clear
+        Usage: `robo.leftIsClear()`
+        """
         return not self.leftIsWall() and not self.leftIsBeacon()
-    
+
     def frontIsClear(self):
+        """Check if the object in front is clear
+        Usage: `robo.frontIsClear()`
+        """
         return not self.frontIsWall() and not self.frontIsBeacon()
 
     def rightIsClear(self):
+        """Check if the object on the right is clear
+        Usage: `robo.rightIsClear()`
+        """
         return not self.rightIsWall() and not self.rightIsBeacon()
 
     def leftIsObstacle(self):
+        """Check if the object on the left is an obstacle
+        Usage: `robo.leftIsObstacle()`
+        """
         return self.leftIsWall() or self.leftIsBeacon()
 
     def frontIsObstacle(self):
+        """Check if the object in front is an obstacle
+        Usage: `robo.frontIsObstacle()`
+        """
         return self.frontIsWall() or self.frontIsBeacon()
-    
-    def _backIsObstacle(self):
-        return self._backIsWall() or self._backIsBeacon()
+
+    def __backIsObstacle__(self):
+        """Internal function | `Do not call from outside`"""
+        return self.__backIsWall__() or self.__backIsBeacon__()
 
     def rightIsObstacle(self):
+        """Check if the object on the right is an obstacle
+        Usage: `robo.rightIsObstacle()`
+        """
         return self.rightIsWall() or self.rightIsBeacon()
 
     def leftIsWhite(self):
-        return self._leftElement().lower() == "1"
+        """Check if the object on the left is white
+        Usage: `robo.leftIsWhite()`
+        """
+        return self.__leftElement__().lower() == "1"
 
     def frontIsWhite(self):
-        return self._getFrontElem().lower() == "1"
+        """Check if the object in front is white
+        Usage: `robo.frontIsWhite()`
+        """
+        return self.__getFrontElem__().lower() == "1"
 
     def rightIsWhite(self):
-        return self._rightElement().lower() == "1"
+        """Check if the object on the right is white
+        Usage: `robo.rightIsWhite()`
+        """
+        return self.__rightElement__().lower() == "1"
 
     def leftIsBlack(self):
-        return self._leftElement().lower() == "0"
+        """Check if the object on the left is black
+        Usage: `robo.leftIsBlack()`
+        """
+        return self.__leftElement__().lower() == "0"
 
     def frontIsBlack(self):
-        return self._getFrontElem().lower() == "0"
+        """Check if the object in front is black
+        Usage: `robo.frontIsBlack()`
+        """
+        return self.__getFrontElem__().lower() == "0"
 
     def rightIsBlack(self):
-        return self._rightElement().lower() == "0"
+        """Check if the object on the right is black
+        Usage: `robo.rightIsBlack()`
+        """
+        return self.__rightElement__().lower() == "0"
 
-    def draw(self, surface) -> None:
-        img = pygame.transform.rotate(self.image, self.orientation)
-        surface.blit(img, self.rect)
+    def __draw__(self, surface) -> None:
+        """Internal function | `Do not call from outside`"""
+        img = pygame.transform.rotate(self._image_, self._orientation_)
+        surface.blit(img, self._rect_)
 
-    def drawGrid(self):
-        for x in range(0, len(maps[0])):
-            for y in range(0, len(maps)):
-                if maps[y][x] == "W":
-                    screen.blit(wall, (x*scales, y*scales))
-                elif maps[y][x] == "w":
-                    screen.blit(water, (x*scales, y*scales))
-                elif maps[y][x] == "m":
-                    screen.blit(wall1, (x*scales, y*scales))
-                elif maps[y][x] == "n":
-                    screen.blit(wall2, (x*scales, y*scales))
-                elif maps[y][x].lower() == "0": 
-                    screen.blit(black, (x*scales, y*scales))
-                elif maps[y][x].lower() == "1":
-                    screen.blit(white, (x*scales, y*scales))
-                elif maps[y][x].lower() == "b":
-                    screen.blit(beacon, (x*scales, y*scales))
+    def __drawGrid__(self):
+        """Internal function | `Do not call from outside`"""
+        for x in range(0, len(_maps_[0])):
+            for y in range(0, len(_maps_)):
+                if _maps_[y][x] == "W":
+                    _screen_.blit(_wall_, (x * _scales_, y * _scales_))
+                elif _maps_[y][x] == "w":
+                    _screen_.blit(_water_, (x * _scales_, y * _scales_))
+                elif _maps_[y][x] == "m":
+                    _screen_.blit(_wall1_, (x * _scales_, y * _scales_))
+                elif _maps_[y][x] == "n":
+                    _screen_.blit(_wall2_, (x * _scales_, y * _scales_))
+                elif _maps_[y][x].lower() == "0":
+                    _screen_.blit(_black_, (x * _scales_, y * _scales_))
+                elif _maps_[y][x].lower() == "1":
+                    _screen_.blit(_white_, (x * _scales_, y * _scales_))
+                elif _maps_[y][x].lower() == "b":
+                    _screen_.blit(_beacon_, (x * _scales_, y * _scales_))
                 else:
-                    screen.blit(floor, (x*scales, y*scales))
+                    _screen_.blit(_floor_, (x * _scales_, y * _scales_))
 
-    def update(self):
-        self.drawGrid()
-        self.draw(screen)
-        if len(self.messageTxt) > 0:
-            surf = my_font.render(self.messageTxt, False, (0, 0,0))
-            pygame.draw.rect(screen, (255, 255, 255), surf.get_rect())
-            screen.blit(surf, (0, 0))
+    def __update__(self):
+        """Internal function | `Do not call from outside`"""
+        self.__drawGrid__()
+        self.__draw__(_screen_)
+        if len(self._messageTxt_) > 0:
+            surf = _font_.render(self._messageTxt_, False, (0, 0, 0))
+            pygame.draw.rect(_screen_, (255, 255, 255), surf.get_rect())
+            _screen_.blit(surf, (0, 0))
         if self.paint != None:
-            maps[self.loc[1]] = maps[self.loc[1]][:self.loc[0]] + self.paint + maps[self.loc[1]][self.loc[0] + 1:]
+            _maps_[self.loc[1]] = (
+                _maps_[self.loc[1]][: self.loc[0]]
+                + self.paint
+                + _maps_[self.loc[1]][self.loc[0] + 1 :]
+            )
         pygame.display.update()
         pygame.display.flip()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit(0)
-        self.clock.tick(10)
 
 
 if __name__ == "__main__":
-    print("\n\nThis file is not meant to be run directly. \
-        \nPlease import it using \"from robot import robo\"")
+    print(
+        '\n\nThis file is not meant to be run directly. \
+        \nPlease import it using "from robot import robo"'
+    )
     sys.exit(1)
