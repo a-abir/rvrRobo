@@ -78,6 +78,16 @@ class robo():
             return maps[self.loc[1] + 1][self.loc[0]]
         elif self.orientation == 270:
             return maps[self.loc[1]][self.loc[0] + 1]
+        
+    def _getBackElem(self):
+        if self.orientation == 0:
+            return maps[self.loc[1] + 1][self.loc[0]]
+        elif self.orientation == 90:
+            return maps[self.loc[1]][self.loc[0] + 1]
+        elif self.orientation == 180:
+            return maps[self.loc[1] - 1][self.loc[0]]
+        elif self.orientation == 270:
+            return maps[self.loc[1]][self.loc[0] - 1]
 
     def _getFrontElemLoc(self):
         if self.orientation == 0:
@@ -120,6 +130,13 @@ class robo():
                 self.update()
             time.sleep(0.15 / self.__speed)
             if self.frontIsObstacle():
+                for i in range(6):
+                    time.sleep(0.05 / self.__speed)
+                    if i % 2 == 0:
+                        self.orientation += 15
+                    else:
+                        self.orientation -= 15
+                    self.update()
                 return
             else:
                 fmov = self._getFrontRoboMov()
@@ -131,12 +148,20 @@ class robo():
     def backward(self, steps=1):
         for _ in range(steps):
             self.update()
-            self.left()
-            self.left()
-            self.forward(update=False)
-            self.left()
-            self.left()
             time.sleep(0.15 / self.__speed)
+            if self._backIsObstacle():
+                for i in range(6):
+                    time.sleep(0.05 / self.__speed)
+                    if i % 2 == 0:
+                        self.orientation += 15
+                    else:
+                        self.orientation -= 15
+                    self.update()
+                return
+            else:
+                fmov = self._getFrontRoboMov()
+                self.rect.move_ip(-fmov[0], -fmov[1])
+                self.loc = (self.loc[0] - fmov[0] // scales, self.loc[1] - fmov[1] // scales)
             self.update()
 
     def right(self, steps=1):
@@ -163,7 +188,6 @@ class robo():
     def putDown(self):
         if self.cargo == 0:
             return
-        flem = self._getFrontElem()
         if self.frontIsObstacle():
             return
         else:
@@ -188,6 +212,9 @@ class robo():
     def leftIsBeacon(self):
         return self._leftElement().lower() == "b"
 
+    def _backIsBeacon(self):
+        return self._getBackElem().lower() == "b"
+
     def frontIsBeacon(self):
         return self._getFrontElem().lower() == "b"
 
@@ -197,6 +224,9 @@ class robo():
     def leftIsWall(self):
         return self._leftElement().lower() in ['w', 'n', 'm']
 
+    def _backIsWall(self):
+        return self._getBackElem().lower() in ['w', 'n', 'm']
+
     def frontIsWall(self):
         return self._getFrontElem().lower() in ['w', 'n', 'm']
 
@@ -205,7 +235,7 @@ class robo():
 
     def leftIsClear(self):
         return not self.leftIsWall() and not self.leftIsBeacon()
-
+    
     def frontIsClear(self):
         return not self.frontIsWall() and not self.frontIsBeacon()
 
@@ -217,6 +247,9 @@ class robo():
 
     def frontIsObstacle(self):
         return self.frontIsWall() or self.frontIsBeacon()
+    
+    def _backIsObstacle(self):
+        return self._backIsWall() or self._backIsBeacon()
 
     def rightIsObstacle(self):
         return self.rightIsWall() or self.rightIsBeacon()
