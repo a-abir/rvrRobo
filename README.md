@@ -93,6 +93,9 @@ Example Program:
 
 **Message Commands:**
 
+ - `robo.message(f"My robot: {robo}")`
+	: *Print all robo info [Ex. Robot(3, 11) | Orientation: 90 | Cargo: 0 | Paint: None]*
+
  - `robo.message(f"location {robo.loc[0]} , {robo.loc[1]}")`
 	: *Insert the current location (x,y)*
 	

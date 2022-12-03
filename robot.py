@@ -71,7 +71,8 @@ class robo:
         """
         self.loc = (x, y)
         self.cargo = 0
-        self.paint = None
+        self.paint = "None"
+        self._binPaint_ = None
         self._orientation_: int = 0
         self._rect_ = pygame.rect.Rect((_scales_ * x, _scales_ * y, _scales_, _scales_))
         self._speed = 1
@@ -79,6 +80,16 @@ class robo:
         self._robot_iter_ = [0, 0]
         self._robot_ = _robots_[self._robot_iter_[0]]
         self.__update__()
+
+    def __repr__(self) -> str:
+        """Internal function | `Do not call from outside`"""
+        return (
+            f"Robot({self.loc[0]}, {self.loc[1]}) | Orientation: "
+            + f"{self._orientation_} | Cargo: {self.cargo} | Paint: {self.paint}"
+        )
+
+    def __str__(self) -> str:
+        return self.__repr__()
 
     def setSpeed(self, speed: float):
         """Set the speed of the robot
@@ -158,17 +169,15 @@ class robo:
         elif self._orientation_ == 270:
             return (_scales_, 0)
 
-    def forward(self, steps=1, update=True) -> None:
+    def forward(self, steps=1) -> None:
         """Move the robot forward
 
         Keyword Arguments:
             steps {int} -- number of steps to move (default: {1})
-            update {bool} -- update the screen (default: {True})
         Usage: `robo.forward()`
         """
         for _ in range(steps):
-            if update:
-                self.__update__()
+            self.__update__()
             pygame.time.wait(int(25 / self._speed))
             if self.frontIsObstacle():
                 for i in range(6):
@@ -178,7 +187,7 @@ class robo:
                     else:
                         self._orientation_ -= 15
                     self.__update__()
-                return
+                return self
             else:
                 fmov = self.__getFrontRoboMov__()
                 for _ in range(_scales_):
@@ -189,8 +198,8 @@ class robo:
                     self.loc[0] + fmov[0] // _scales_,
                     self.loc[1] + fmov[1] // _scales_,
                 ]
-            if update:
-                self.__update__()
+            self.__update__()
+        return self
 
     def backward(self, steps=1) -> None:
         """Move the robot backward
@@ -210,7 +219,7 @@ class robo:
                     else:
                         self._orientation_ -= 15
                     self.__update__()
-                return
+                return self
             else:
                 fmov = self.__getFrontRoboMov__()
                 for _ in range(_scales_):
@@ -221,6 +230,7 @@ class robo:
                     self.loc[1] - fmov[1] // _scales_,
                 ]
             self.__update__()
+        return self
 
     def right(self, steps=1):
         """Turn the robot right
@@ -235,6 +245,7 @@ class robo:
                 self.__update__()
             self._orientation_ %= 360
             self.__update__()
+        return self
 
     def left(self, steps=1):
         """Turn the robot left
@@ -249,6 +260,7 @@ class robo:
                 self.__update__()
             self._orientation_ %= 360
             self.__update__()
+        return self
 
     def pickUp(self):
         """Pick up the object in front of the robot
@@ -263,15 +275,16 @@ class robo:
                 _maps_[floc[1]][: floc[0]] + "." + _maps_[floc[1]][floc[0] + 1 :]
             )
             self.__update__()
+        return self
 
     def putDown(self):
         """Put down the object in front of the robot
         Usage: `robo.putDown()`
         """
         if self.cargo == 0:
-            return
+            return self
         if self.frontIsObstacle():
-            return
+            return self
         else:
             pygame.time.wait(int(150 // self._speed))
             self.cargo -= 1
@@ -280,6 +293,7 @@ class robo:
                 _maps_[floc[1]][: floc[0]] + "b" + _maps_[floc[1]][floc[0] + 1 :]
             )
             self.__update__()
+        return self
 
     def eatUp(self):
         """Eat up the object in front of the robot
@@ -292,24 +306,31 @@ class robo:
                 _maps_[floc[1]][: floc[0]] + "." + _maps_[floc[1]][floc[0] + 1 :]
             )
             self.__update__()
+        return self
 
     def paintWhite(self):
         """Paint the object in front of the robot white
         Usage: `robo.paintWhite()`
         """
-        self.paint = "1"
+        self._binPaint_ = "1"
+        self.paint = "White"
+        return self
 
     def paintBlack(self):
         """Paint the object in front of the robot black
         Usage: `robo.paintBlack()`
         """
-        self.paint = "0"
+        self._binPaint_ = "0"
+        self.paint = "Black"
+        return self
 
     def stopPainting(self):
         """Stop painting the object in front of the robot
         Usage: `robo.stopPainting()`
         """
-        self.paint = None
+        self._binPaint_ = None
+        self.paint = "None"
+        return self
 
     def clearPaint(self):
         """Clear the paint on the object in front of the robot
@@ -325,6 +346,7 @@ class robo:
                 + _maps_[self.loc[1]][self.loc[0] + 1 :]
             )
             self.__update__()
+        return self
 
     def leftIsBeacon(self):
         """Check if the object on the left is a beacon
@@ -488,10 +510,10 @@ class robo:
             surf = _font_.render(self._messageTxt_, False, (0, 0, 0))
             pygame.draw.rect(_screen_, (255, 255, 255), surf.get_rect())
             _screen_.blit(surf, (0, 0))
-        if self.paint != None:
+        if self._binPaint_ != None:
             _maps_[self.loc[1]] = (
                 _maps_[self.loc[1]][: self.loc[0]]
-                + self.paint
+                + self._binPaint_
                 + _maps_[self.loc[1]][self.loc[0] + 1 :]
             )
         pygame.display.update()
